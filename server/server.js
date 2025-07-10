@@ -61,6 +61,10 @@ app.get("/get-command", (req, res) => {
     res.send("{led_"+latestCommand+"}");
   }
 });
+app.use((req, res, next) => {
+  console.log("요청 URL:", req.url);
+  next();
+});
 // Glitch에서는 process.env.PORT를 사용하여 포트를 설정
 app.listen(process.env.PORT || 3000, () => {
   console.log("서버 실행 중");
