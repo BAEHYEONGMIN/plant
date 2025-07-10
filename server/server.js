@@ -1,5 +1,9 @@
 const express = require("express");
 const app = express();
+app.use((req, res, next) => {
+  console.log("요청 URL:", req.url);
+  next();
+});
 let latestCommand = null;
 // 메인 페이지 (홈 페이지) 설정
 app.get("/", (req, res) => {
