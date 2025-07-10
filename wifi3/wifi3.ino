@@ -4,6 +4,8 @@ const String ssid   = "KT_GiGA_3A57";
 const String password = "8aek04zh16";
 #define RX 2
 #define TX 3
+#define PUMP 9
+#define SWITCH 8
 #define LED_PIN	7
 SoftwareSerial espSerial(RX, TX); // RX, TX
 //함수 선언부분
@@ -13,10 +15,14 @@ String sendRequest(String request);
 bool waitForWifi(unsigned long timeout = 15000);
 String getjson(String response);
 
+//변수 선언부분
+bool switch_prev = false;
+
 void setup() {
   Serial.begin(9600);          // PC와 연결
   espSerial.begin(9600);       // ESP-01과 연결
   pinMode(LED_PIN, OUTPUT);
+  pinMode(PUMP,OUTPUT);
   String result = "";
   delay(2000);
   sendAT("AT");                // 모듈 응답 확인
@@ -50,6 +56,11 @@ void setup() {
 }
 
 void loop() {//주기가 대략 17초.
+  int switch_cur = !digitalRead(SWITCH);
+  Serial.println("switch state :");
+  Serial.println(switch_cur);
+  switch_prev = switch_cur;
+
   String request = 
       "GET /get-command HTTP/1.1\r\n"
       "Host: baemin-simple-server.glitch.me\r\n"
@@ -57,10 +68,16 @@ void loop() {//주기가 대략 17초.
       "Connection: close\r\n\r\n";
   String result = sendRequest(request);
   Serial.println(result);
-  if (result=="led_on"){digitalWrite(LED_PIN,HIGH);}
-  if (result=="led_off"){digitalWrite(LED_PIN,LOW);}
-  delay(4000);
-
+  if (result=="led_on"){
+    digitalWrite(LED_PIN,HIGH);
+    // digitalWrite(PUMP,HIGH);
+    }
+  if (result=="led_off"){
+    digitalWrite(LED_PIN,LOW);
+    // digitalWrite(PUMP,LOW);
+    }
+  delay(2000);
+  
 }
 String sendAT(String cmd, unsigned long timeout = 5000) {
   while (espSerial.available()) espSerial.read(); // 버퍼 정리
@@ -125,8 +142,6 @@ String sendRequest(String request) {
   char buffer[512];
   int index = 0;
   
-  // sendAT("AT+CIPCLOSE");
-  // delay(1000); // 최소 1초 대기
   while (espSerial.available()) espSerial.read(); // 버퍼 정리
   delay(200);
   sendAT("AT+CIPSTART=\"TCP\",\"baemin-simple-server.glitch.me\",80");
@@ -172,16 +187,3 @@ String sendRequest(String request) {
   return response;
 }
 
-String get_json(String response) {
-  int jsonStart = response.indexOf('{');
-  int jsonEnd = response.lastIndexOf('}');
-  
-  if (jsonStart != -1 && jsonEnd != -1 && jsonEnd > jsonStart) {
-    String jsonPart = response.substring(jsonStart, jsonEnd + 1);
-    Serial.println("JSON 응답: " + jsonPart);
-    return jsonPart;
-  } else {
-    Serial.println("[!] JSON 응답을 찾을 수 없음");
-    return "error";
-  }
-}

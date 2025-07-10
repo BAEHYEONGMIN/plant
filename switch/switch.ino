@@ -36,11 +36,11 @@ void loop() {
     Serial.println(switch_on);
     if(switch_on == true){
       digitalWrite(LED_PIN,HIGH);
-      digitalWrite(PUMP,LOW);
+      // digitalWrite(PUMP,LOW);
     }
     else{
       digitalWrite(LED_PIN,LOW);
-      digitalWrite(PUMP,HIGH);
+      // digitalWrite(PUMP,HIGH);
     }
   }
   delay(100);
